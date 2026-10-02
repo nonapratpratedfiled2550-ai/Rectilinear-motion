@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>การเคลื่อนที่แนวตรง | สื่อจำลองฟิสิกส์ ม.4</title>
+<style>
+  :root {
+    --bg: #e7eef6;
+    --ink: #142033;
+    --muted: #526277;
+    --panel: #ffffff;
+    --line: #d5e0ec;
+    --navy: #0c3b66;
+    --teal: #0f6e8c;
+    --blue: #1565c0;
+    --green: #0c8f62;
+    --red: #d12626;
+    --amber: #b86e00;
+    --soft: #f4f8fb;
+    --shadow: 0 8px 28px rgba(20, 40, 70, .08);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--bg);
+    font-family: "Leelawadee UI", "Tahoma", "Segoe UI", sans-serif;
+    font-size: 14.5px;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
+  header {
+    flex: none;
+    background: var(--navy);
+    color: #fff;
+    padding: 10px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+  header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0; }
+  header p { margin: 2px 0 0; color: #d5e6f5; font-size: 13px; }
+  .badge-top {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+  main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 318px minmax(0, 1fr) 392px;
+    gap: 10px;
+    padding: 10px;
+  }
+  .col {
+    min-height: 0;
+    overflow: auto;
+    background: var(--panel);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+  }
+  .mid { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
+  h2 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--navy);
+  }
+  .help { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+  .block { margin-bottom: 12px; }
+  label.field { display: block; font-weight: 650; margin-bottom: 4px; }
+  select, input[type="range"] { width: 100%; }
+  select {
+    border: 1px solid var(--line);
+    background: var(--soft);
+    border-radius: 8px;
+    padding: 7px 8px;
+  }
+  .slider-top, .switch-row, .stat, .g-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .slider-top { margin-bottom: 2px; }
+  output { font-variant-numeric: tabular-nums; color: var(--teal); font-weight: 700; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets button, .time-row button, .seg button {
+    border: 1px solid var(--line);
+    background: var(--soft);
+    border-radius: 999px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .presets button:hover, .time-row button:hover, .seg button:hover { border-color: var(--teal); }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button[aria-pressed="true"] {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+  }
+  .switch-row { margin: 6px 0; }
+  .time-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .time-row button { border-radius: 10px; font-weight: 700; }
+  #play { background: var(--green); color: #fff; border-color: var(--green); }
+  #pause { background: #fff7e8; border-color: #efd3a0; }
+  #step { background: #e8f3ff; border-color: #b9d4f2; }
+  #reset { background: #fdecec; border-color: #f0c2c2; }
+  .keys { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+  .stage-box { position: relative; flex: 1; min-height: 360px; }
+  #stage, #tape, .gcanvas {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    background: #f7fbfe;
+    border: 1px solid var(--line);
+    touch-action: none;
+  }
+  #stage { height: 100%; }
+  #tape { height: 132px; background: #f6f1e4; }
+  .hud, .badge {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .badge {
+    top: 10px;
+    right: auto;
+    width: max-content;
+    max-width: calc(100% - 20px);
+    color: var(--navy);
+    font-weight: 700;
+    background: rgba(255,255,255,.9);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+  .hud {
+    bottom: 10px;
+    background: rgba(255,255,255,.92);
+    border-radius: 10px;
+    padding: 6px 8px;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+  .legend-line { color: var(--muted); font-size: 12.5px; margin: 0; }
+  .graph h3 { margin: 8px 0 2px; font-size: 13.5px; color: var(--navy); }
+  .gcanvas { height: 112px; }
+  .gcap { margin: 2px 0 6px; color: var(--muted); font-size: 12px; }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .stat {
+    background: var(--soft);
+    border-radius: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+  }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .stat b { font-variant-numeric: tabular-nums; }
+  .eq {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin: 4px 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .note, .warn, .mis {
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-top: 8px;
+  }
+  .note { background: #eef6ff; color: #16385c; }
+  .warn { background: #fff4f4; color: #8d1d1d; }
+  .mis { background: #fff8eb; border-left: 4px solid var(--amber); }
+  .mis.good { background: #eefaf4; border-left-color: var(--green); }
+  .mis h3 { margin: 0 0 4px; font-size: 14px; }
+  .mis p { margin: 0; }
+  .scroll-box { max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { background: #f3f7fb; position: sticky; top: 0; }
+  .disabled { opacity: .45; pointer-events: none; }
+  [hidden] { display: none !important; }
+  @media (max-width: 1180px) {
+    body { height: auto; overflow: auto; }
+    main { grid-template-columns: 1fr; display: block; }
+    .col { overflow: visible; margin-bottom: 10px; }
+    .stage-box { height: 460px; flex: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>การเคลื่อนที่แนวตรง</h1>
+    <p>สื่อจำลองเชิงโต้ตอบ · ฟิสิกส์เพิ่มเติม มัธยมศึกษาปีที่ 4 · ตามแนวแบบเรียน สสวท.</p>
+  </div>
+  <div class="badge-top">สเกลาร์และเวกเตอร์ · ความเร่งคงตัว · ตกเสรี · กราฟ · เคาะสัญญาณเวลา</div>
+</header>
+<main>
+  <section class="col" id="panel">
+    <div class="block">
+      <h2>โหมดการทดลอง</h2>
+      <select id="mode" aria-label="โหมดการทดลอง">
+        <option value="quant">1. ปริมาณการเคลื่อนที่และกราฟ</option>
+        <option value="eqn">2. ความเร่งคงตัว (5 สมการ)</option>
+        <option value="fall">3. การตกเสรีและโยนแนวดิ่ง</option>
+        <option value="tick">4. การเคาะสัญญาณเวลา</option>
+      </select>
+      <p class="help" id="modeHelp"></p>
+    </div>
+    <div class="block">
+      <h2>สถานการณ์ตัวอย่าง</h2>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div class="block">
+      <h2>เงื่อนไขเริ่มต้น</h2>
+      <div class="slider-top"><label for="x0">ตำแหน่งเริ่มต้น x₀</label><output id="x0Out"></output></div>
+      <input id="x0" type="range" min="-50" max="50" step="0.5" value="0">
+      <div class="slider-top"><label for="u">ความเร็วเริ่มต้น u</label><output id="uOut"></output></div>
+      <input id="u" type="range" min="-30" max="30" step="0.5" value="10">
+      <div id="aWrap">
+        <div class="slider-top"><label for="a" id="aLabel">ความเร่งที่กำหนด a₀</label><output id="aOut"></output></div>
+        <input id="a" type="range" min="-10" max="10" step="0.1" value="2">
+      </div>
+      <div id="mWrap">
+        <div class="slider-top"><label for="m">มวลวัตถุ A</label><output id="mOut"></output></div>
+        <input id="m" type="range" min="1" max="10" step="0.5" value="2">
+      </div>
+      <div id="gWrap">
+        <div class="slider-top"><span class="field">ความเร่งโน้มถ่วง g</span><output id="gOut"></output></div>
+        <div class="seg" id="gSeg">
+          <button type="button" data-g="9.8" aria-pressed="true">โลก 9.8</button>
+          <button type="button" data-g="10" aria-pressed="false">โลก 10</button>
+          <button type="button" data-g="1.6" aria-pressed="false">ดวงจันทร์ 1.6</button>
+          <button type="button" data-g="3.7" aria-pressed="false">ดาวอังคาร 3.7</button>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+      <h2>เครื่องมือ</h2>
+      <div class="switch-row"><span>แสดงเวกเตอร์ v และ a</span><input id="vectors" type="checkbox" checked></div>
+      <div class="switch-row"><span>แรงต้านอากาศ (k = 0.25 kg/m)</span><input id="air" type="checkbox"></div>
+      <div class="switch-row" id="compareWrap"><span>เปรียบเทียบ 2 มวล</span><input id="compare" type="checkbox"></div>
+      <div class="switch-row" id="groundWrap"><span>หยุดเมื่อถึงพื้น x = 0</span><input id="ground" type="checkbox" checked></div>
+      <div class="switch-row" id="apexWrap"><span>หยุดที่จุดสูงสุด</span><input id="apexPause" type="checkbox" checked></div>
+      <div class="slider-top"><label for="gate">ตำแหน่งประตูแสง</label><output id="gateOut"></output></div>
+      <input id="gate" type="range" min="-50" max="50" step="0.5" value="15">
+      <p class="help">ลากหรือคลิกบนเส้นทางการเคลื่อนที่เพื่อวางประตูแสง วัด t และ v ขณะวัตถุผ่าน</p>
+      <div id="gateLog" class="note">ยังไม่ผ่านประตูแสง</div>
+      <div id="tickCtrl">
+        <div class="slider-top"><label for="tickRate">ช่วงเคาะสัญญาณ</label></div>
+        <select id="tickRate">
+          <option value="0.02">50 Hz · ทุก 0.02 s (ห้องทดลอง)</option>
+          <option value="0.1" selected>10 Hz · ทุก 0.10 s</option>
+          <option value="0.5">2 Hz · ทุก 0.50 s</option>
+        </select>
+      </div>
+    </div>
+    <div class="block">
+      <h2>ควบคุมเวลา</h2>
+      <div class="time-row">
+        <button type="button" id="play">เริ่ม</button>
+        <button type="button" id="pause">หยุดชั่วคราว</button>
+        <button type="button" id="step">ทีละเฟรม</button>
+        <button type="button" id="reset">ตั้งค่าใหม่</button>
+      </div>
+      <div class="slider-top" style="margin-top:8px"><label for="speed">อัตราเร็วของแบบจำลอง</label></div>
+      <select id="speed">
+        <option value="0.25">0.25×</option>
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1× เวลาจริง</option>
+        <option value="2">2×</option>
+      </select>
+      <p class="keys">Space เริ่มหรือหยุด · ลูกศรขวา ทีละ 0.10 s · R ตั้งค่าใหม่</p>
+    </div>
+  </section>
+
+  <section class="col mid">
+    <div class="stage-box">
+      <canvas id="stage" width="800" height="480" aria-label="ภาพการเคลื่อนที่"></canvas>
+      <div class="badge" id="badge"></div>
+      <div class="hud" id="hud"></div>
+    </div>
+    <p class="legend-line" id="legend">จุดสีน้ำเงินทุก 0.5 s · ลูกศรเขียว = ความเร็ว · ลูกศรแดง = ความเร่ง · เส้นแดง = ประตูแสง</p>
+    <canvas id="tape" width="800" height="132" hidden aria-label="แถบกระดาษเคาะสัญญาณเวลา"></canvas>
+  </section>
+
+  <section class="col" id="analytics">
+    <h2>กราฟการเคลื่อนที่</h2>
+    <div class="graph">
+      <h3>กราฟตำแหน่ง–เวลา (x–t)</h3>
+      <canvas class="gcanvas" id="gx" width="360" height="112"></canvas>
+      <p class="gcap" id="capX"></p>
+    </div>
+    <div class="graph">
+      <h3>กราฟความเร็ว–เวลา (v–t)</h3>
+      <canvas class="gcanvas" id="gv" width="360" height="112"></canvas>
+      <p class="gcap" id="capV"></p>
+    </div>
+    <div class="graph">
+      <h3>กราฟความเร่ง–เวลา (a–t)</h3>
+      <canvas class="gcanvas" id="ga" width="360" height="112"></canvas>
+      <p class="gcap" id="capA"></p>
+    </div>
+    <h2>ค่าที่วัดได้</h2>
+    <div class="stats" id="stats"></div>
+    <h2>สูตรและการแทนค่า</h2>
+    <div id="formula"></div>
+    <div id="tickPanel" hidden>
+      <h2>แถบเคาะสัญญาณเวลา</h2>
+      <div id="tickFormula"></div>
+      <div class="scroll-box"><table id="tickTable"></table></div>
+    </div>
+    <div class="mis" id="mis"></div>
+  </section>
+</main>
+<script>
+const DRAG_K = 0.25;
+const MAX_T = 40;
+const DOT_DT = 0.5;
+const FRAME = 0.1;
+const SPAN = 50;
+
+const S = {
+  mode: "quant",
+  x0: 0,
+  u: 10,
+  a0: 2,
+  m: 2,
+  g: 9.8,
+  air: false,
+  vectors: true,
+  compare: false,
+  groundStop: true,
+  pauseApex: true,
+  gate: 15,
+  tickDt: 0.1,
+  speed: 1,
+  t: 0,
+  playing: false,
+  note: "",
+  camLo: -12
+};
+
+const PRESETS = [
+  ["ค่าเริ่มต้น", { mode: "quant", x0: 0, u: 10, a0: 2, air: false, compare: false, g: 9.8 }],
+  ["กลับทิศทาง", { mode: "quant", x0: 0, u: 12, a0: -3, air: false, compare: false }],
+  ["เร็วขึ้นทิศลบ", { mode: "quant", x0: 10, u: -8, a0: -2, air: false, compare: false }],
+  ["สมการ 5 สมการ", { mode: "eqn", x0: 0, u: 8, a0: 2, air: false, compare: false }],
+  ["โยนขึ้น", { mode: "fall", x0: 0, u: 20, air: false, compare: false, g: 9.8, groundStop: true, pauseApex: true }],
+  ["ปล่อยตกเทียบมวล", { mode: "fall", x0: 40, u: 0, m: 2, air: false, compare: true, g: 9.8, groundStop: true }],
+  ["แรงต้านอากาศ", { mode: "fall", x0: 50, u: 0, m: 2, air: true, compare: true, g: 9.8, groundStop: true, pauseApex: false }],
+  ["เคาะสัญญาณ", { mode: "tick", x0: 0, u: 1.5, a0: 0.8, air: false, compare: false, tickDt: 0.1 }]
+];
+
+const MODE_HELP = {
+  quant: "เปรียบเทียบระยะทางกับการกระจัด และอัตราเร็วกับความเร็ว อ่านความชันและพื้นที่ใต้กราฟ",
+  eqn: "เมื่อความเร่งคงตัวและความต้านอากาศปิด สมการทั้ง 5 ให้ค่าสอดคล้องกัน สัญลักษณ์ s ในสมการคือการกระจัด",
+  fall: "ทิศขึ้นเป็นบวก ทิศลงเป็นลบ ตาม สสวท. ระหว่างอยู่กลางอากาศ a = −g แม้ที่จุดสูงสุด",
+  tick: "จุดบนแถบกระดาษห่างตามระยะที่เคลื่อนที่ในหนึ่งช่วงเวลา ช่องถี่แปลว่าช้า ช่องห่างแปลว่าเร็ว"
+};
+
+let N = null;
+let view = null;
+let lockInput = false;
+let heavyAt = 0;
+const $ = (id) => document.getElementById(id);
+
+function num(n, d = 2) {
+  if (!Number.isFinite(n)) return "—";
+  const p = 10 ** d;
+  const r = Math.round((n + Number.EPSILON) * p) / p;
+  if (r === 0) return (0).toFixed(d);
+  return r.toFixed(d);
+}
+function paren(n, d = 2) {
+  const s = num(n, d);
+  return s.startsWith("-") ? "(" + s + ")" : s;
+}
+function gVal() { return S.g; }
+function massB() { return S.m >= 5 ? 1 : 8; }
+function setA0() { return S.mode === "fall" ? -gVal() : S.a0; }
+function dragTerm(v, m) { return S.air ? -(DRAG_K / m) * v * Math.abs(v) : 0; }
+function accelOf(v, m) { return setA0() + dragTerm(v, m); }
+
+function impactTime(x0, u, a) {
+  if (!(S.mode === "fall" && S.groundStop)) return null;
+  if (x0 < -1e-9) return null;
+  if (x0 <= 1e-9 && u <= 1e-9) return 0;
+  if (Math.abs(a) < 1e-10) {
+    if (u < 0 && x0 > 0) return -x0 / u;
+    return null;
+  }
+  const disc = u * u - 2 * a * x0;
+  if (disc < -1e-8) return null;
+  const s = Math.sqrt(Math.max(0, disc));
+  const cands = [(-u + s) / a, (-u - s) / a].filter((t) => t > 1e-4).sort((p, q) => p - q);
+  for (const t of cands) {
+    const v = u + a * t;
+    const tb = Math.max(0, t - 0.001);
+    const xb = x0 + u * tb + 0.5 * a * tb * tb;
+    if (xb >= -1e-3 && v <= 0.05) return t;
+  }
+  return cands[0] ?? null;
+}
+
+function apexTimeOf(u, a, ti) {
+  if (S.mode !== "fall" || a >= -1e-8 || u <= 0) return null;
+  const t = -u / a;
+  if (t <= 1e-4) return null;
+  if (ti != null && t >= ti - 1e-4) return null;
+  return t;
+}
+
+function pathLength(x0, u, a, t) {
+  if (t <= 1e-8) return 0;
+  const xAt = (tt) => x0 + u * tt + 0.5 * a * tt * tt;
+  if (Math.abs(a) < 1e-10) return Math.abs(u * t);
+  const tr = -u / a;
+  if (tr > 1e-4 && tr < t - 1e-4) {
+    const xr = xAt(tr);
+    return Math.abs(xr - x0) + Math.abs(xAt(t) - xr);
+  }
+  return Math.abs(xAt(t) - x0);
+}
+
+function analyticAt(tWant) {
+  const a = setA0();
+  const sitting = S.mode === "fall" && S.groundStop && Math.abs(S.x0) <= 1e-9 && Math.abs(S.u) <= 1e-9;
+  if (sitting) {
+    return { t: 0, x: 0, v: 0, a: 0, path: 0, grounded: true, sitting: true, impactV: 0, impactT: 0, impactA: 0 };
+  }
+  const ti = impactTime(S.x0, S.u, a);
+  let t = Math.max(0, tWant);
+  let grounded = false;
+  if (ti != null && t >= ti) {
+    t = ti;
+    grounded = ti > 0 || (S.x0 <= 1e-9 && S.u < 0);
+    if (ti === 0) grounded = true;
+  }
+  const v = S.u + a * t;
+  let x = S.x0 + S.u * t + 0.5 * a * t * t;
+  if (grounded && S.groundStop && S.mode === "fall") x = Math.max(0, x);
+  if (grounded) x = 0;
+  return {
+    t, x, v, a, path: pathLength(S.x0, S.u, a, t),
+    grounded, sitting: false,
+    impactV: grounded ? v : null,
+    impactT: grounded ? t : null,
+    impactA: grounded ? a : null
+  };
+}
+
+function samplesAnalytic(tEnd) {
+  const out = [];
+  const step = 0.05;
+  const end = Math.max(0, tEnd);
+  for (let t = 0; t <= end + 1e-9; t += step) out.push(analyticAt(Math.min(t, end)));
+  const last = analyticAt(end);
+  if (!out.length || Math.abs(out[out.length - 1].t - last.t) > 1e-6) out.push(last);
+  return out;
+}
+
+function crossings(x0, u, a, gate, tMax) {
+  const hits = [];
+  if (tMax <= 1e-4) return hits;
+  const roots = [];
+  if (Math.abs(a) < 1e-10) {
+    if (Math.abs(u) > 1e-10) roots.push((gate - x0) / u);
+  } else {
+    const c = x0 - gate;
+    const disc = u * u - 2 * a * c;
+    if (disc >= -1e-8) {
+      const s = Math.sqrt(Math.max(0, disc));
+      roots.push((-u + s) / a, (-u - s) / a);
+    }
+  }
+  roots.sort((p, q) => p - q);
+  for (const t of roots) {
+    if (t > 1e-3 && t <= tMax + 1e-4 && (hits.length === 0 || t - hits[hits.length - 1].t > 1e-3)) {
+      hits.push({ t, x: gate, v: u + a * t });
+    }
+  }
+  return hits;
+}
+
+function initNumeric() {
+  const aU = accelOf(S.u, S.m);
+  N = {
+    t: 0,
+    x: S.x0, v: S.u, a: aU, path: 0, grounded: false,
+    impactV: null, impactT: null, impactA: null,
+    x2: S.x0, v2: S.u, a2: accelOf(S.u, massB()), path2: 0, grounded2: false,
+    impactV2: null, impactT2: null,
+    apexT: null,
+    done: false,
+    samples: [],
+    samples2: [],
+    hits: [],
+    prevX: S.x0,
+    nextDot: DOT_DT,
+    nextTick: S.tickDt
+  };
+  if (S.mode === "fall" && S.groundStop && S.x0 <= 1e-9 && S.u <= 1e-9) {
+    const rest = Math.abs(S.u) <= 1e-9;
+    N.x = 0;
+    N.v = rest ? 0 : S.u;
+    N.a = rest ? 0 : aU;
+    N.grounded = true;
+    N.impactV = N.v;
+    N.impactA = N.a;
+    N.impactT = 0;
+    N.x2 = 0;
+    N.v2 = 0;
+    N.a2 = 0;
+    N.grounded2 = true;
+    N.done = true;
+  }
+  pushNumericSample();
+}
+
+function pushNumericSample() {
+  N.samples.push({ t: N.t, x: N.x, v: N.v, a: N.a, path: N.path, grounded: N.grounded });
+  if (S.compare && S.mode === "fall") {
+    N.samples2.push({ t: N.t, x: N.x2, v: N.v2, a: N.a2, path: N.path2, grounded: N.grounded2 });
+  }
+}
+
+function landBody(which, vHit, aHit) {
+  if (which === 1) {
+    N.impactV = vHit;
+    N.impactA = aHit;
+    N.impactT = N.t;
+    N.x = 0;
+    N.grounded = true;
+    if (S.compare) { N.v = 0; N.a = 0; }
+    else { N.v = vHit; N.a = aHit; N.done = true; }
+  } else {
+    N.impactV2 = vHit;
+    N.impactT2 = N.t;
+    N.x2 = 0;
+    N.v2 = 0;
+    N.a2 = 0;
+    N.grounded2 = true;
+  }
+}
+
+function stepNumeric(h) {
+  if (N.done && !(S.compare && S.mode === "fall" && !N.grounded2)) return;
+  const useGround = S.mode === "fall" && S.groundStop;
+  if (!N.grounded) {
+    const a = accelOf(N.v, S.m);
+    N.a = a;
+    const vNext = N.v + a * h;
+    const xNext = N.x + vNext * h;
+    if (useGround && N.x > 0 && xNext <= 0) {
+      const frac = N.x / (N.x - xNext);
+      const vHit = N.v + a * h * frac;
+      N.path += N.x;
+      N.t += h * frac;
+      landBody(1, vHit, accelOf(vHit, S.m));
+      if (S.mode === "fall" && N.apexT == null && S.u > 0 && vHit < 0) N.apexT = N.impactT;
+      N.prevX = 0;
+      pushNumericSample();
+      return;
+    }
+    if (N.apexT == null && N.v > 0 && vNext <= 0 && S.mode === "fall") {
+      const frac = N.v / (N.v - vNext || 1);
+      N.apexT = N.t + h * frac;
+    }
+    N.path += Math.abs(xNext - N.x);
+    N.v = vNext;
+    N.x = xNext;
+    N.a = accelOf(N.v, S.m);
+  } else if (S.compare) {
+    N.v = 0; N.a = 0; N.x = 0;
+  }
+  if (S.compare && S.mode === "fall" && !N.grounded2) {
+    const m2 = massB();
+    const a2 = accelOf(N.v2, m2);
+    N.a2 = a2;
+    const v2 = N.v2 + a2 * h;
+    const x2 = N.x2 + v2 * h;
+    if (useGround && N.x2 > 0 && x2 <= 0) {
+      const frac = N.x2 / (N.x2 - x2);
+      const vHit = N.v2 + a2 * h * frac;
+      N.path2 += N.x2;
+      landBody(2, vHit, accelOf(vHit, m2));
+    } else {
+      N.path2 += Math.abs(x2 - N.x2);
+      N.v2 = v2;
+      N.x2 = x2;
+      N.a2 = accelOf(N.v2, m2);
+    }
+  }
+  N.t += h;
+  N.prevX = N.x;
+  if (N.t + 1e-9 >= N.samples[N.samples.length - 1].t + 0.02) pushNumericSample();
+  if (S.compare && N.grounded && N.grounded2) N.done = true;
+}
+
+function hitsFromSamples(samples, gate) {
+  const hits = [];
+  for (let i = 1; i < samples.length; i++) {
+    const a = samples[i - 1];
+    const b = samples[i];
+    const d1 = a.x - gate;
+    const d2 = b.x - gate;
+    if (d1 === 0) continue;
+    if (d1 * d2 < 0 || d2 === 0) {
+      const f = d1 / (d1 - d2 || 1);
+      const t = a.t + (b.t - a.t) * f;
+      const v = a.v + (b.v - a.v) * f;
+      if (!hits.length || t - hits[hits.length - 1].t > 1e-3) hits.push({ t, x: gate, v });
+    }
+  }
+  return hits;
+}
+
+function ensureBuilt(tTarget) {
+  if (!N) initNumeric();
+  const h = 0.001;
+  let guard = 0;
+  while (N.t < tTarget - 1e-6 && !N.done && guard < 80000) {
+    const step = Math.min(h, tTarget - N.t);
+    const t0 = N.t;
+    stepNumeric(step);
+    if (N.t < t0 + 1e-8 && N.grounded) break;
+    guard++;
+  }
+}
+
+function interp(samples, t) {
+  if (!samples.length) return { t: 0, x: S.x0, v: S.u, a: accelOf(S.u, S.m), path: 0, grounded: false };
+  if (t <= samples[0].t) return samples[0];
+  const last = samples[samples.length - 1];
+  if (t >= last.t) return last;
+  let lo = 0, hi = samples.length - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (samples[mid].t < t) lo = mid; else hi = mid;
+  }
+  const a = samples[lo], b = samples[hi];
+  const f = (t - a.t) / (b.t - a.t || 1);
+  const mix = (p, q) => p + (q - p) * f;
+  return { t, x: mix(a.x, b.x), v: mix(a.v, b.v), a: mix(a.a, b.a), path: mix(a.path, b.path), grounded: b.grounded && f > 0.999 };
+}
+
+function derive(tClock) {
+  const tWant = Math.max(0, Math.min(MAX_T, tClock));
+  if (!S.air) {
+    const primary = analyticAt(tWant);
+    const a = primary.sitting ? 0 : setA0();
+    const ti = primary.sitting ? 0 : impactTime(S.x0, S.u, setA0());
+    const apex = primary.sitting ? null : apexTimeOf(S.u, setA0(), ti);
+    const samples = samplesAnalytic(primary.t);
+    let second = null;
+    if (S.compare && S.mode === "fall") second = { ...primary, m: massB() };
+    return {
+      ...primary,
+      a: primary.sitting ? 0 : a,
+      apex,
+      samples,
+      samples2: second ? samples : [],
+      second,
+      hits: primary.sitting ? [] : crossings(S.x0, S.u, setA0(), S.gate, primary.t),
+      m2: massB()
+    };
+  }
+  ensureBuilt(tWant);
+  let samples = N.samples.filter((s) => s.t <= tWant + 1e-3);
+  if (N.apexT != null && N.apexT <= tWant + 1e-4 && !samples.some((s) => Math.abs(s.t - N.apexT) < 1e-3 && Math.abs(s.v) < 0.05)) {
+    const at = interp(N.samples, N.apexT);
+    const point = { t: N.apexT, x: at.x, v: 0, a: accelOf(0, S.m), path: at.path, grounded: false };
+    const ins = samples.findIndex((s) => s.t > N.apexT);
+    if (ins < 0) samples.push(point);
+    else samples.splice(ins, 0, point);
+  }
+  let primary = interp(samples, Math.min(tWant, N.t));
+  if (N.apexT != null && Math.abs(tWant - N.apexT) < 0.02 && !primary.grounded && Math.abs(primary.v) < 0.4) {
+    primary = { ...primary, t: N.apexT, v: 0, a: accelOf(0, S.m) };
+  }
+  const second = (S.compare && S.mode === "fall") ? interp(N.samples2, Math.min(tWant, N.t)) : null;
+  const hits = hitsFromSamples(samples, S.gate).filter((h) => h.t <= primary.t + 1e-3);
+  return {
+    t: primary.t,
+    x: primary.x,
+    v: primary.v,
+    a: primary.a,
+    path: primary.path,
+    grounded: primary.grounded,
+    sitting: false,
+    impactV: N.impactV,
+    impactT: N.impactT,
+    impactA: N.impactA,
+    apex: N.apexT,
+    samples,
+    samples2: second ? N.samples2.filter((s) => s.t <= tWant + 1e-3) : [],
+    second: second ? {
+      ...second,
+      impactV: N.impactV2,
+      impactT: N.impactT2,
+      grounded: second.grounded,
+      m: massB()
+    } : null,
+    hits,
+    m2: massB()
+  };
+}
+
+function dotsAt(st, dt) {
+  const out = [];
+  const tEnd = st.t;
+  for (let t = 0; t <= tEnd + 1e-6; t += dt) {
+    const tt = Math.min(t, tEnd);
+    if (!S.air) {
+      const p = analyticAt(tt);
+      out.push({ t: p.t, x: p.x });
+      if (p.grounded && tt > 0) break;
+    } else {
+      const p = interp(N.samples, tt);
+      out.push({ t: p.t, x: p.x });
+      if (p.grounded && !S.compare) break;
+    }
+    if (out.length > 400) break;
+  }
+  return out;
+}
+
+function resetSim() {
+  S.t = 0;
+  S.playing = false;
+  S.note = "";
+  N = null;
+  S.camLo = S.x0 - 12;
+}
+
+function applyPreset(p) {
+  Object.assign(S, p);
+  syncInputs();
+  resetSim();
+  refreshEnable();
+}
+
+function syncInputs() {
+  lockInput = true;
+  $("mode").value = S.mode;
+  $("x0").value = S.x0;
+  $("u").value = S.u;
+  $("a").value = S.a0;
+  $("m").value = S.m;
+  $("gate").value = S.gate;
+  $("air").checked = S.air;
+  $("vectors").checked = S.vectors;
+  $("compare").checked = S.compare;
+  $("ground").checked = S.groundStop;
+  $("apexPause").checked = S.pauseApex;
+  $("speed").value = String(S.speed);
+  $("tickRate").value = String(S.tickDt);
+  document.querySelectorAll("#gSeg button").forEach((b) => {
+    b.setAttribute("aria-pressed", String(Number(b.dataset.g) === S.g));
+  });
+  lockInput = false;
+  writeOutputs();
+}
+
+function writeOutputs() {
+  $("x0Out").textContent = num(S.x0, 1) + " m";
+  $("uOut").textContent = num(S.u, 1) + " m/s";
+  $("aLabel").textContent = S.mode === "fall" ? "ความเร่งตกเสรี a = −g" : "ความเร่งที่กำหนด a₀";
+  $("aOut").textContent = num(S.mode === "fall" ? -gVal() : S.a0, 2) + " m/s²";
+  $("mOut").textContent = num(S.m, 1) + " kg";
+  $("gOut").textContent = num(S.g, 1) + " m/s²";
+  $("gateOut").textContent = num(S.gate, 1) + " m";
+  $("modeHelp").textContent = MODE_HELP[S.mode];
+}
+
+function refreshEnable() {
+  $("aWrap").classList.toggle("disabled", S.mode === "fall");
+  const massOn = S.mode === "fall" || S.air;
+  $("mWrap").classList.toggle("disabled", !massOn);
+  $("gWrap").classList.toggle("disabled", S.mode !== "fall");
+  $("compareWrap").classList.toggle("disabled", S.mode !== "fall");
+  $("groundWrap").classList.toggle("disabled", S.mode !== "fall");
+  $("apexWrap").classList.toggle("disabled", S.mode !== "fall");
+  $("tickCtrl").classList.toggle("disabled", S.mode !== "tick");
+  $("tape").hidden = S.mode !== "tick";
+  $("tickPanel").hidden = S.mode !== "tick";
+}
+
+function finishedState(st) {
+  if (S.t >= MAX_T - 1e-4) return "max";
+  if (S.mode === "fall" && S.groundStop && st.grounded && !(S.air && S.compare && st.second && !st.second.grounded)) return "ground";
+  return "";
+}
+
+function advance(dt) {
+  if (dt <= 0) return;
+  const before = S.t;
+  if (before >= MAX_T - 1e-4) { S.playing = false; S.note = "max"; return; }
+  const peek = derive(before);
+  if (finishedState(peek) === "ground") { S.playing = false; S.note = "ground"; S.t = peek.t; return; }
+  let target = Math.min(MAX_T, before + dt);
+  if (S.pauseApex && S.mode === "fall" && !S.air) {
+    const ta = apexTimeOf(S.u, setA0(), impactTime(S.x0, S.u, setA0()));
+    if (ta != null && before < ta - 1e-4 && target >= ta) {
+      S.t = ta;
+      S.playing = false;
+      S.note = "apex";
+      return;
+    }
+  }
+  S.t = target;
+  if (S.air && S.pauseApex && S.mode === "fall") {
+    ensureBuilt(S.t);
+    if (N.apexT != null && before < N.apexT - 1e-4 && S.t >= N.apexT) {
+      S.t = N.apexT;
+      S.playing = false;
+      S.note = "apex";
+      return;
+    }
+  }
+  const st = derive(S.t);
+  const end = finishedState(st);
+  if (end === "ground") {
+    S.t = st.t;
+    S.playing = false;
+    S.note = "ground";
+  } else if (S.t >= MAX_T - 1e-4) {
+    S.playing = false;
+    S.note = "max";
+  } else if (S.note === "apex" || S.note === "ground" || S.note === "max") {
+    S.note = "";
+  }
+}
+
+function fit(canvas) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (w < 2 || h < 2) return null;
+  if (canvas._w !== w || canvas._h !== h || canvas._dpr !== dpr) {
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas._w = w;
+    canvas._h = h;
+    canvas._dpr = dpr;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+
+function drawArrow(ctx, x, y, dx, dy, color, text) {
+  const len = Math.hypot(dx, dy);
+  if (len < 8) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + dx, y + dy);
+  ctx.stroke();
+  const ang = Math.atan2(dy, dx);
+  ctx.translate(x + dx, y + dy);
+  ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-11, 5.2);
+  ctx.lineTo(-11, -5.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.rotate(-ang);
+  ctx.font = "700 13px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText(text, 8, -6);
+  ctx.restore();
+}
+
+function tag(ctx, text, x, y, fill = "#102033") {
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  const w = ctx.measureText(text).width;
+  ctx.fillStyle = "rgba(255,255,255,.9)";
+  ctx.fillRect(x, y - 13, w + 8, 17);
+  ctx.fillStyle = fill;
+  ctx.fillText(text, x + 4, y);
+}
+
+function drawCar(ctx, x, y, dir) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir < 0 ? -1 : 1, 1);
+  ctx.fillStyle = "rgba(20,40,70,.15)";
+  ctx.beginPath();
+  ctx.ellipse(0, 18, 26, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1565c0";
+  roundRect(ctx, -28, -16, 56, 24, 7);
+  ctx.fill();
+  ctx.fillStyle = "#0d4c91";
+  roundRect(ctx, -12, -30, 30, 16, 6);
+  ctx.fill();
+  ctx.fillStyle = "#d7f0ff";
+  roundRect(ctx, -6, -26, 18, 10, 3);
+  ctx.fill();
+  const spin = (S.x0 + (view ? 0 : 0)) ;
+  drawWheel(ctx, -16, 8, S.t);
+  drawWheel(ctx, 16, 8, S.t);
+  ctx.restore();
+}
+
+function drawWheel(ctx, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#1f2933";
+  ctx.beginPath();
+  ctx.arc(0, 0, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#dbe7f3";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-4, 0); ctx.lineTo(4, 0);
+  ctx.moveTo(0, -4); ctx.lineTo(0, 4);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawBall(ctx, x, y, color, label) {
+  const grd = ctx.createRadialGradient(x - 5, y - 6, 2, x, y, 16);
+  grd.addColorStop(0, "#ffffff");
+  grd.addColorStop(1, color);
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(x, y, 14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,.25)";
+  ctx.stroke();
+  tag(ctx, label, x + 16, y - 8);
+}
+
+function panCamera(x) {
+  const lo = S.camLo;
+  const hi = lo + SPAN;
+  if (x < lo + 6) S.camLo += x - (lo + 6);
+  else if (x > hi - 8) S.camLo += x - (hi - 8);
+}
+
+function drawHorizontal(ctx, w, h, st) {
+  panCamera(st.x);
+  const lo = S.camLo;
+  const hi = lo + SPAN;
+  const left = 42, right = w - 18, top = 36;
+  const axisY = Math.round(h * 0.62);
+  const X = (x) => left + (x - lo) / (hi - lo) * (right - left);
+  view = { lo, hi, left, right, top, bottom: h - 20, axisY, X, vertical: false, w, h };
+  ctx.fillStyle = "#f5f9fd";
+  ctx.fillRect(0, 0, w, h);
+  const step = SPAN > 40 ? 5 : 1;
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  for (let x = Math.ceil(lo / step) * step; x <= hi; x += step) {
+    const px = X(x);
+    ctx.strokeStyle = Math.abs(x) < 1e-6 ? "#8aa4be" : "#e1ebf4";
+    ctx.lineWidth = Math.abs(x) < 1e-6 ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(px, 28);
+    ctx.lineTo(px, h - 16);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "#24384f";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(left, axisY);
+  ctx.lineTo(right, axisY);
+  ctx.stroke();
+  ctx.fillStyle = "#24384f";
+  ctx.beginPath();
+  ctx.moveTo(right, axisY);
+  ctx.lineTo(right - 10, axisY - 5);
+  ctx.lineTo(right - 10, axisY + 5);
+  ctx.fill();
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("+x", right - 28, axisY - 10);
+  for (let x = Math.ceil(lo / 5) * 5; x <= hi; x += 5) {
+    const px = X(x);
+    ctx.strokeStyle = "#24384f";
+    ctx.beginPath();
+    ctx.moveTo(px, axisY - 6);
+    ctx.lineTo(px, axisY + 6);
+    ctx.stroke();
+    ctx.fillStyle = "#24384f";
+    ctx.fillText(String(Math.round(x)), px - 8, axisY + 22);
+  }
+  const dots = dotsAt(st, DOT_DT);
+  dots.forEach((d, i) => {
+    const px = X(d.x);
+    if (px < left - 4 || px > right + 4) return;
+    ctx.fillStyle = "#1565c0";
+    ctx.beginPath();
+    ctx.arc(px, axisY, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    if (S.mode === "tick" && i % 2 === 0) tag(ctx, String(i), px - 6, axisY + 40, "#1565c0");
+  });
+  drawGateVertical(ctx, X(S.gate), 48, h - 28, st);
+  const px = X(st.x);
+  const dir = st.v < -0.05 ? -1 : 1;
+  drawCar(ctx, px, axisY - 20, dir);
+  tag(ctx, "x = " + num(st.x) + " m", px - 36, axisY - 62);
+  if (S.vectors) {
+    drawArrow(ctx, px, axisY - 48, st.v * 3.1, 0, "#0c8f62", "v");
+    drawArrow(ctx, px, axisY - 78, st.a * 8, 0, "#d12626", "a");
+  }
+  if (S.compare && st.second && S.mode === "fall") {
+    /* horizontal modes do not compare */
+  }
+  ctx.fillStyle = "#526277";
+  ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("ทิศขวาเป็นบวก", left, 22);
+}
+
+function drawGateVertical(ctx, gx, y1, y2, st) {
+  const hot = st.hits.some((h) => Math.abs(st.t - h.t) < 0.12);
+  ctx.save();
+  ctx.strokeStyle = hot ? "#0c8f62" : "#d12626";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(gx, y1);
+  ctx.lineTo(gx, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#7a1f1f";
+  ctx.fillRect(gx - 7, y1, 14, 8);
+  ctx.fillRect(gx - 7, y2 - 8, 14, 8);
+  tag(ctx, "ประตูแสง", gx + 8, y1 + 18, hot ? "#0c8f62" : "#8d1d1d");
+  ctx.restore();
+}
+
+function drawVertical(ctx, w, h, st) {
+  const a = setA0();
+  let hMax = Math.max(8, S.x0, st.x, S.gate);
+  if (!S.air && S.u > 0 && a < 0) {
+    const ta = -S.u / a;
+    hMax = Math.max(hMax, S.x0 + S.u * ta + 0.5 * a * ta * ta);
+  }
+  if (st.second) hMax = Math.max(hMax, st.second.x);
+  const lo = Math.min(-1.5, st.x - 1, 0);
+  const hi = hMax + Math.max(2, hMax * 0.08);
+  const left = 58, right = w - 28, top = 28, bottom = h - 36;
+  const Y = (x) => bottom - (x - lo) / (hi - lo) * (bottom - top);
+  const Xc = (S.compare ? w * 0.42 : w * 0.55);
+  view = { lo, hi, left, right, top, bottom, Y, Xc, vertical: true, w, h };
+  const sky = ctx.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#d5ebf8");
+  sky.addColorStop(1, "#f7fbfe");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+  const y0 = Y(0);
+  ctx.fillStyle = "#d7eccf";
+  ctx.fillRect(0, y0, w, h - y0);
+  ctx.strokeStyle = "#2f6b3a";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, y0);
+  ctx.lineTo(w, y0);
+  ctx.stroke();
+  ctx.fillStyle = "#2f6b3a";
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("พื้น x = 0", 12, Math.min(h - 8, y0 + 16));
+  ctx.strokeStyle = "#24384f";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(left, top);
+  ctx.lineTo(left, bottom);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(left, top);
+  ctx.lineTo(left - 5, top + 10);
+  ctx.lineTo(left + 5, top + 10);
+  ctx.fillStyle = "#24384f";
+  ctx.fill();
+  ctx.fillText("+x ขึ้น", left + 8, top + 12);
+  const span = hi - lo;
+  const tick = span > 80 ? 10 : span > 30 ? 5 : span > 12 ? 2 : 1;
+  for (let x = Math.ceil(lo / tick) * tick; x <= hi; x += tick) {
+    const py = Y(x);
+    ctx.strokeStyle = "#24384f";
+    ctx.beginPath();
+    ctx.moveTo(left - 5, py);
+    ctx.lineTo(left + 5, py);
+    ctx.stroke();
+    ctx.fillStyle = "#24384f";
+    ctx.fillText(String(Math.round(x * 10) / 10), 8, py + 4);
+  }
+  const dots = dotsAt(st, DOT_DT);
+  dots.forEach((d) => {
+    ctx.fillStyle = "#1565c0";
+    ctx.beginPath();
+    ctx.arc(Xc, Y(d.x), 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  const gy = Y(S.gate);
+  const hot = st.hits.some((hh) => Math.abs(st.t - hh.t) < 0.12);
+  ctx.save();
+  ctx.strokeStyle = hot ? "#0c8f62" : "#d12626";
+  ctx.setLineDash([5, 4]);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(left + 20, gy);
+  ctx.lineTo(right, gy);
+  ctx.stroke();
+  ctx.restore();
+  tag(ctx, "ประตูแสง " + num(S.gate, 1) + " m", left + 28, gy - 8, hot ? "#0c8f62" : "#8d1d1d");
+  drawBall(ctx, Xc, Y(st.x), "#1565c0", "A " + num(S.m, 1) + " kg");
+  if (S.vectors) {
+    drawArrow(ctx, Xc + 28, Y(st.x), 0, -st.v * 3.2, "#0c8f62", "v");
+    drawArrow(ctx, Xc + 58, Y(st.x), 0, -st.a * 5.5, "#d12626", "a");
+  }
+  if (S.compare && st.second) {
+    const x2 = S.air ? st.second.x : st.x;
+    drawBall(ctx, Xc + 120, Y(x2), "#e07a14", "B " + num(massB(), 1) + " kg");
+    if (!S.air) tag(ctx, "ระดับเดียวกัน", Xc + 108, Y(x2) + 28, "#0c8f62");
+  }
+}
+
+function niceStep(span) {
+  if (!(span > 0)) return 1;
+  const raw = span / 5;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const n = raw / pow;
+  const f = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+  return f * pow;
+}
+function axisNum(n) {
+  const a = Math.abs(n);
+  if (a >= 100) return n.toFixed(0);
+  if (a >= 10) return n.toFixed(1);
+  return n.toFixed(a >= 1 ? 1 : 2);
+}
+
+function drawChart(canvas, samples, samples2, key, color) {
+  const box = fit(canvas);
+  if (!box) return;
+  const { ctx, w, h } = box;
+  const m = { l: 44, r: 10, t: 12, b: 24 };
+  const pw = w - m.l - m.r;
+  const ph = h - m.t - m.b;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  const tMax = Math.max(2, S.t, samples.length ? samples[samples.length - 1].t : 0);
+  let y0 = 0, y1 = 0;
+  const consider = samples.concat(samples2 || []);
+  consider.forEach((s) => { y0 = Math.min(y0, s[key]); y1 = Math.max(y1, s[key]); });
+  if (y1 - y0 < 1e-6) { y0 -= 1; y1 += 1; }
+  const pad = (y1 - y0) * 0.16;
+  y0 -= pad; y1 += pad;
+  const X = (t) => m.l + (t / tMax) * pw;
+  const Y = (y) => m.t + (y1 - y) / (y1 - y0) * ph;
+  ctx.strokeStyle = "#e6eef6";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#60758c";
+  ctx.font = "11px Leelawadee UI, Tahoma, sans-serif";
+  const xs = niceStep(tMax);
+  for (let t = 0; t <= tMax + 1e-6; t += xs) {
+    ctx.beginPath(); ctx.moveTo(X(t), m.t); ctx.lineTo(X(t), m.t + ph); ctx.stroke();
+    ctx.fillText(axisNum(t), X(t) - 8, h - 6);
+  }
+  const ys = niceStep(y1 - y0);
+  const yStart = Math.ceil(y0 / ys) * ys;
+  for (let y = yStart; y <= y1; y += ys) {
+    ctx.beginPath(); ctx.moveTo(m.l, Y(y)); ctx.lineTo(m.l + pw, Y(y)); ctx.stroke();
+    ctx.fillText(axisNum(y), 2, Y(y) + 3);
+  }
+  if (y0 < 0 && y1 > 0) {
+    ctx.strokeStyle = "#9eb0c3";
+    ctx.beginPath(); ctx.moveTo(m.l, Y(0)); ctx.lineTo(m.l + pw, Y(0)); ctx.stroke();
+  }
+  if (samples.length > 1 && (key === "v" || key === "a")) {
+    ctx.beginPath();
+    ctx.moveTo(X(samples[0].t), Y(0));
+    samples.forEach((s) => ctx.lineTo(X(s.t), Y(s[key])));
+    ctx.lineTo(X(samples[samples.length - 1].t), Y(0));
+    ctx.closePath();
+    ctx.fillStyle = key === "v" ? "rgba(12,143,98,.18)" : "rgba(209,38,38,.16)";
+    ctx.fill();
+  }
+  const strokeSeries = (arr, col, dash) => {
+    if (!arr || arr.length < 1) return;
+    ctx.beginPath();
+    arr.forEach((s, i) => i ? ctx.lineTo(X(s.t), Y(s[key])) : ctx.moveTo(X(s.t), Y(s[key])));
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash(dash);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const last = arr[arr.length - 1];
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(X(last.t), Y(last[key]), 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  strokeSeries(samples, color, []);
+  if (samples2 && samples2.length && S.air && S.compare) strokeSeries(samples2, "#e07a14", [5, 3]);
+  ctx.fillStyle = "#60758c";
+  ctx.fillText("t (s)", w - 36, h - 6);
+}
+
+function drawTape(st) {
+  const canvas = $("tape");
+  if (canvas.hidden) return;
+  const box = fit(canvas);
+  if (!box) return;
+  const { ctx, w, h } = box;
+  ctx.fillStyle = "#f4efe2";
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = "#e2d3b0";
+  ctx.strokeRect(8, 16, w - 16, h - 32);
+  const pts = dotsAt(st, S.tickDt);
+  ctx.fillStyle = "#6b542c";
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("แถบกระดาษ · ระยะตามเส้นทาง · หนึ่งช่อง = หนึ่งช่วงเวลา " + num(S.tickDt, 2) + " s", 14, 13);
+  if (pts.length < 2) {
+    ctx.fillText("เริ่มการเคลื่อนที่เพื่อให้เกิดจุดเคาะ", 14, 70);
+    return;
+  }
+  const show = pts.length > 20 ? pts.slice(-20) : pts;
+  const gaps = [];
+  for (let i = 1; i < show.length; i++) gaps.push(Math.abs(show[i].x - show[i - 1].x));
+  const sum = gaps.reduce((s, g) => s + g, 0) || 1;
+  const px = Math.min(90, (w - 48) / sum);
+  let cursor = 24;
+  const y = 68;
+  show.forEach((p, i) => {
+    ctx.fillStyle = "#1b1b1b";
+    ctx.beginPath();
+    ctx.arc(cursor, y, 4.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#6b542c";
+    ctx.fillText(String(pts.length - show.length + i), cursor - 4, y + 22);
+    if (i < show.length - 1) {
+      const gap = Math.abs(show[i + 1].x - show[i].x);
+      const dx = show[i + 1].x - show[i].x;
+      const wseg = Math.max(gap * px, 2);
+      ctx.fillStyle = dx < -1e-4 ? "#8d1d1d" : "#6b542c";
+      ctx.fillText(num(dx, 2), cursor + wseg / 2 - 12, y - 12);
+      cursor += wseg;
+    }
+  });
+}
+
+function misInfo(st) {
+  const dx = st.x - S.x0;
+  const turned = st.path - Math.abs(dx) > 0.15;
+  const nearApex = S.mode === "fall" && st.apex != null && !st.sitting && st.t >= st.apex - 0.05 && st.t <= st.apex + 0.8 && !(st.grounded && st.t > st.apex + 0.05);
+  if (nearApex) {
+    return ["good", "จุดสูงสุด: ความเร็วเป็นศูนย์ แต่ความเร่งไม่เป็นศูนย์",
+      "ขณะนี้อยู่ใกล้จุดสูงสุด v ≈ " + num(st.v) + " m/s แต่ความเร่งยังเป็น a = −g = " + num(-gVal()) + " m/s² ทิศลงตลอดเวลาที่อยู่กลางอากาศ"];
+  }
+  if (S.mode === "fall" && st.grounded && !st.sitting && Math.abs(dx) < 0.3 && st.path > 0.3) {
+    return ["warn", "กลับถึงระดับเดิม: การกระจัดเป็นศูนย์ แต่ระยะทางไม่เป็นศูนย์",
+      "โยนขึ้นแล้วกลับมาที่ระดับเดิม Δx = " + num(dx) + " m ส่วนระยะทาง s = " + num(st.path) + " m คือเส้นทางขึ้นและลงรวมกัน"];
+  }
+  if (S.mode === "fall" && st.grounded && !st.sitting && S.compare && !S.air) {
+    return ["good", "มวลต่างกัน ตกถึงพื้นพร้อมกัน",
+      "ไม่เปิดแรงต้านอากาศ ความเร่งของทั้งสองก้อนเท่ากับ −g จึงใช้เวลาถึงพื้นเท่ากัน ความเร็วขณะกระทบพื้นไม่ขึ้นกับมวล"];
+  }
+  if (S.mode === "fall" && S.air && S.compare && (st.grounded || (st.second && st.second.grounded))) {
+    return ["warn", "มีแรงต้านอากาศแล้ว มวลมีผลต่อการตก",
+      "a = −g − (k/m) v|v| มวลมากได้รับผลของแรงต้านต่อมวลน้อยกว่า จึงถึงพื้นก่อนและมีความเร็วขณะกระทบมากกว่า"];
+  }
+  if (st.v < -0.2 && st.a < -0.05) {
+    return ["warn", "ความเร่งลบไม่ได้แปลว่าช้าลงเสมอ",
+      "ตอนนี้ทั้งความเร็วและความเร่งเป็นลบ ทิศเดียวกัน วัตถุจึงเร็วขึ้นในทิศลบ อัตราเร็วเพิ่มจาก " + num(Math.abs(S.u)) + " เป็น " + num(Math.abs(st.v)) + " m/s"];
+  }
+  if (turned) {
+    return ["warn", "ระยะทางไม่เท่ากับการกระจัด เมื่อมีการกลับทิศ",
+      "ระยะทาง s = " + num(st.path) + " m แต่การกระจัด Δx = " + num(dx) + " m ระยะทางนับเส้นทางทั้งหมด การกระจัดดูเฉพาะตำแหน่งต้นกับตำแหน่งปลาย"];
+  }
+  if (st.v < -0.2) {
+    return ["warn", "ความเร็วกับอัตราเร็วไม่ใช่สิ่งเดียวกัน",
+      "ความเร็วขณะนี้เป็นลบ เพราะเคลื่อนที่ทิศลบ แต่อัตราเร็วคือขนาดของความเร็ว = " + num(Math.abs(st.v)) + " m/s ซึ่งเป็นบวก"];
+  }
+  if (st.a < -0.05 && st.v > 0.2) {
+    return ["good", "กรณีนี้ความเร่งลบทำให้ช้าลง เพราะทิศตรงข้ามความเร็ว",
+      "ความเร็วเป็นบวก แต่ความเร่งเป็นลบ จึงชะลอตัว ถ้าความเร็วกลับเป็นลบขณะที่ความเร่งยังลบ วัตถุจะกลับมาเร็วขึ้นในทิศลบ"];
+  }
+  if (S.mode === "fall" && S.air) {
+    return ["warn", "แรงต้านอากาศทำให้ความเร่งไม่คงตัว และมวลมีผล",
+      "แบบจำลองใช้ a = −g − (k/m) v|v| โดย k = 0.25 kg/m มวลต่างกันจึงมีความเร่งไม่เท่ากัน"];
+  }
+  if (S.mode === "fall" && !S.air) {
+    return ["good", "ในสุญญากาศ มวลไม่มีผลต่อการตกเสรี",
+      "ไม่ว่ามวลจะเป็นเท่าใด ความเร่งเท่ากับ −g = " + num(-gVal()) + " m/s² เปิด «เปรียบเทียบ 2 มวล» แล้วปล่อยตก จะถึงพื้นพร้อมกัน"];
+  }
+  if (S.mode === "tick") {
+    if (Math.abs(st.a) < 0.05) return ["good", "ความเร่งเป็นศูนย์ ช่องระหว่างจุดเท่ากัน", "วัตถุเคลื่อนที่ด้วยความเร็วคงตัว ระยะระหว่างจุดเคาะจึงเท่ากันทุกช่วงเวลา"];
+    return ["good", "ช่องระหว่างจุดเปลี่ยนตามความเร็ว", "ความเร่งไม่เป็นศูนย์ ความเร็วเปลี่ยน ระยะห่างของจุดในช่วงเวลาเท่ากันจึงไม่เท่ากัน จุดห่างขึ้นแปลว่าอัตราเร็วเพิ่มขึ้น"];
+  }
+  if (S.mode === "eqn" && !S.air) {
+    return ["good", "ความเร่งคงตัว ใช้สมการทั้ง 5 ได้", "ลองเปลี่ยนเครื่องหมายของ u หรือ a แล้วตรวจว่าผลทั้งห้าสมการยังตรงกับการกระจัดและความเร็วบนจอ"];
+  }
+  return ["good", "อ่านกราฟคู่กับการเคลื่อนที่",
+    "ความชันของกราฟ x–t คือความเร็ว ความชันของกราฟ v–t คือความเร่ง พื้นที่ใต้กราฟ v–t คือการกระจัด และพื้นที่ใต้กราฟ a–t คือ Δv ลองสถานการณ์ «กลับทิศทาง» หรือ «โยนขึ้น»"];
+}
+
+function eqBlock(title, body) {
+  return "<div class='eq'><b>" + title + "</b><br>" + body + "</div>";
+}
+
+function formulaHTML(st) {
+  const t = st.t;
+  const dx = st.x - S.x0;
+  const avgV = t > 1e-6 ? dx / t : null;
+  const avgS = t > 1e-6 ? st.path / t : null;
+  let html = "";
+  html += eqBlock("ปริมาณหลัก",
+    "Δx = x − x₀ = " + paren(st.x) + " − " + paren(S.x0) + " = " + num(dx) + " m<br>" +
+    "ระยะทาง s = " + num(st.path) + " m<br>" +
+    "v<sub>avg</sub> = Δx / Δt = " + (avgV == null ? "—" : num(dx) + " / " + num(t) + " = " + num(avgV) + " m/s") + "<br>" +
+    "อัตราเร็วเฉลี่ย = s / Δt = " + (avgS == null ? "—" : num(st.path) + " / " + num(t) + " = " + num(avgS) + " m/s"));
+  if (S.air) {
+    const base = S.mode === "fall" ? -gVal() : S.a0;
+    html += "<div class='warn'>เปิดแรงต้านอากาศ ความเร่งไม่คงตัว สมการทั้ง 5 ของความเร่งคงตัวใช้ตรง ๆ ไม่ได้</div>";
+    html += eqBlock("ความเร่งขณะนี้",
+      (S.mode === "fall"
+        ? "a = −g − (k/m) v|v|<br>"
+        : "a = a₀ − (k/m) v|v|<br>") +
+      "= " + paren(base) + " − (" + num(DRAG_K) + "/" + num(S.m) + ")(" + paren(st.v) + ")|" + num(st.v) + "|<br>" +
+      "= " + num(st.a) + " m/s²");
+  } else if (!st.sitting) {
+    const u = S.u, a = st.a, v = st.v, s = dx;
+    const v1 = u + a * t;
+    const s2 = ((u + v) / 2) * t;
+    const s3 = u * t + 0.5 * a * t * t;
+    const s4 = v * t - 0.5 * a * t * t;
+    const left = v * v;
+    const right = u * u + 2 * a * s;
+    html += eqBlock("สมการที่ 1  v = u + at",
+      num(u) + " + " + paren(a) + "×" + paren(t) + " = " + num(v1) + " m/s");
+    html += eqBlock("สมการที่ 2  s = ((u + v)/2) t",
+      "((" + num(u) + " + " + paren(v) + ")/2) × " + paren(t) + " = " + num(s2) + " m");
+    html += eqBlock("สมการที่ 3  s = ut + ½at²",
+      paren(u) + "×" + paren(t) + " + ½×" + paren(a) + "×" + paren(t) + "² = " + num(s3) + " m");
+    html += eqBlock("สมการที่ 4  s = vt − ½at²",
+      paren(v) + "×" + paren(t) + " − ½×" + paren(a) + "×" + paren(t) + "² = " + num(s4) + " m");
+    html += eqBlock("สมการที่ 5  v² = u² + 2as",
+      num(left) + " = " + num(u * u) + " + 2×" + paren(a) + "×" + paren(s) + " = " + num(right));
+    html += "<p class='help'>ในสมการทั้ง 5 สัญลักษณ์ s หมายถึงการกระจัด Δx ไม่ใช่ระยะทาง</p>";
+  }
+  if (S.mode === "fall" && !S.air && !st.sitting && S.u > 0 && setA0() < 0) {
+    const ta = -S.u / setA0();
+    const hm = S.x0 + S.u * ta + 0.5 * setA0() * ta * ta;
+    html += eqBlock("จุดสูงสุด (v = 0)",
+      "t = u/g = " + num(S.u) + "/" + num(gVal()) + " = " + num(ta) + " s<br>" +
+      "x<sub>max</sub> = x₀ + ut + ½at² = " + num(hm) + " m");
+  }
+  if (st.impactV != null && st.grounded) {
+    html += eqBlock("ขณะกระทบพื้น",
+      "t = " + num(st.impactT) + " s, &nbsp; v = " + num(st.impactV) + " m/s, &nbsp; a = " + num(st.impactA == null ? st.a : st.impactA) + " m/s²");
+  }
+  if (S.compare && S.mode === "fall" && st.second) {
+    const b = st.second;
+    const bv = S.air ? b.v : st.v;
+    const bx = S.air ? b.x : st.x;
+    html += eqBlock("เปรียบเทียบมวล",
+      "A: m = " + num(S.m, 1) + " kg, x = " + num(st.x) + " m, v = " + num(st.v) + " m/s<br>" +
+      "B: m = " + num(massB(), 1) + " kg, x = " + num(bx) + " m, v = " + num(bv) + " m/s<br>" +
+      "ผลต่างความสูง x<sub>A</sub> − x<sub>B</sub> = " + num(st.x - bx) + " m");
+    if (N && N.impactV2 != null) {
+      html += "B กระทบพื้น t = " + num(N.impactT2) + " s, v = " + num(N.impactV2) + " m/s<br>";
+    }
+  }
+  if (S.air && S.mode === "fall") {
+    const vt = -Math.sqrt((S.m * gVal()) / DRAG_K);
+    html += eqBlock("ความเร็วปลายโดยประมาณ",
+      "v<sub>t</sub> = −√(mg/k) = " + num(vt) + " m/s (ทิศลง)");
+  }
+  return html;
+}
+
+function tickerHTML(st) {
+  const pts = dotsAt(st, S.tickDt);
+  if (pts.length < 2) {
+    $("tickFormula").innerHTML = "<div class='note'>ยังไม่มีช่วงเคาะ กดเริ่มแล้วอ่าน Δx ระหว่างจุด</div>";
+    $("tickTable").innerHTML = "";
+    return;
+  }
+  const rows = [];
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i].x - pts[i - 1].x;
+    const dt = pts[i].t - pts[i - 1].t || S.tickDt;
+    rows.push({ i, t1: pts[i - 1].t, t2: pts[i].t, dx, dt, v: dx / dt });
+  }
+  const last = rows[rows.length - 1];
+  $("tickFormula").innerHTML = eqBlock("ช่วงล่าสุด  v<sub>avg</sub> = Δx / Δt",
+    num(last.dx) + " / " + num(last.dt, S.tickDt < 0.05 ? 3 : 2) + " = " + num(last.v) + " m/s" +
+    (last.dx < 0 ? "<br>Δx ติดลบ แปลว่าช่วงนี้เคลื่อนที่ย้อนทิศ" : ""));
+  let extra = "";
+  if (Math.abs(S.tickDt - 0.02) < 1e-6 && pts.length > 6) {
+    extra = "<div class='eq'><b>วิธี 5 ช่วงจุด</b> เวลา 5 × 0.02 = 0.10 s<br>";
+    const groups = [];
+    for (let i = 0; i + 5 < pts.length && groups.length < 6; i += 5) {
+      const dx = pts[i + 5].x - pts[i].x;
+      groups.push("จุด " + i + "→" + (i + 5) + ": v = " + num(dx) + "/0.10 = " + num(dx / 0.1) + " m/s");
+    }
+    extra += groups.join("<br>") + "</div>";
+  }
+  $("tickFormula").innerHTML += extra;
+  const viewRows = rows.length > 40 ? rows.slice(-40) : rows;
+  let head = "<tr><th>ช่วง</th><th>t (s)</th><th>Δx (m)</th><th>ระยะ (m)</th><th>v<sub>avg</sub></th><th>อัตราเร็ว</th></tr>";
+  const body = viewRows.map((r) =>
+    "<tr><td>" + (r.i - 1) + "→" + r.i + "</td><td>" + num(r.t1, 2) + "–" + num(r.t2, 2) +
+    "</td><td>" + num(r.dx) + "</td><td>" + num(Math.abs(r.dx)) + "</td><td>" + num(r.v) +
+    "</td><td>" + num(Math.abs(r.v)) + "</td></tr>").join("");
+  $("tickTable").innerHTML = head + body;
+}
+
+function setHTML(el, html) {
+  if (el._last !== html) {
+    el._last = html;
+    el.innerHTML = html;
+  }
+}
+
+function updateReadout(st, heavy) {
+  const dx = st.x - S.x0;
+  const avgV = st.t > 1e-6 ? dx / st.t : null;
+  const cells = [
+    ["เวลา t", num(st.t) + " s"],
+    ["ตำแหน่ง x", num(st.x) + " m"],
+    ["ระยะทาง s", num(st.path) + " m"],
+    ["การกระจัด Δx", num(dx) + " m"],
+    ["ความเร็ว v", num(st.v) + " m/s"],
+    ["ความเร็วเฉลี่ย", avgV == null ? "—" : num(avgV) + " m/s"],
+    ["อัตราเร็ว |v|", num(Math.abs(st.v)) + " m/s"],
+    ["ความเร่ง a", num(st.a) + " m/s²"]
+  ];
+  setHTML($("stats"), cells.map((c) => "<div class='stat'><span>" + c[0] + "</span><b>" + c[1] + "</b></div>").join(""));
+  $("capX").textContent = "ความชันของกราฟ = ความเร็ว ขณะนี้ v = " + num(st.v) + " m/s";
+  $("capV").textContent = "ความชัน = ความเร่ง a = " + num(st.a) + " m/s² · พื้นที่ใต้กราฟ = การกระจัด Δx = " + num(dx) + " m";
+  $("capA").textContent = "พื้นที่ใต้กราฟ = ความเร็วที่เปลี่ยนไป Δv = v − u = " + num(st.v - S.u) + " m/s";
+  $("hud").textContent = "t = " + num(st.t) + " s    x = " + num(st.x) + " m    v = " + num(st.v) + " m/s    a = " + num(st.a) + " m/s²";
+  const noteText = {
+    apex: "หยุดที่จุดสูงสุดแล้ว กดเริ่มเพื่อเคลื่อนที่ต่อ",
+    ground: "ถึงพื้นหรือครบการตกแล้ว",
+    max: "ถึงเวลาสูงสุดของแบบจำลอง กดตั้งค่าใหม่"
+  };
+  const sign = S.mode === "fall" ? "ทิศขึ้นเป็นบวก" : "ทิศขวาเป็นบวก";
+  $("badge").textContent = sign + (S.note && noteText[S.note] ? " · " + noteText[S.note] : "");
+  setHTML($("formula"), formulaHTML(st));
+  const mis = misInfo(st);
+  const misHTML = "<h3>" + mis[1] + "</h3><p>" + mis[2] + "</p>";
+  const box = $("mis");
+  box.className = "mis " + (mis[0] === "good" ? "good" : "");
+  setHTML(box, misHTML);
+  const hits = st.hits;
+  if (!hits.length) setHTML($("gateLog"), "ยังไม่ผ่านประตูแสง ที่ x = " + num(S.gate, 1) + " m");
+  else {
+    setHTML($("gateLog"), hits.slice(0, 4).map((h, i) =>
+      "ครั้งที่ " + (i + 1) + ": t = " + num(h.t) + " s, v = " + num(h.v) + " m/s").join("<br>"));
+  }
+  if (S.mode === "tick" && (heavy || tickerHTML._t !== st.t || tickerHTML._dt !== S.tickDt)) {
+    tickerHTML._t = st.t;
+    tickerHTML._dt = S.tickDt;
+    tickerHTML(st);
+  }
+}
+
+function paint(st) {
+  const stage = fit($("stage"));
+  if (stage) {
+    if (S.mode === "fall") drawVertical(stage.ctx, stage.w, stage.h, st);
+    else drawHorizontal(stage.ctx, stage.w, stage.h, st);
+  }
+  drawChart($("gx"), st.samples, st.samples2, "x", "#1565c0");
+  drawChart($("gv"), st.samples, st.samples2, "v", "#0c8f62");
+  drawChart($("ga"), st.samples, st.samples2, "a", "#d12626");
+  if (S.mode === "tick") drawTape(st);
+  const now = performance.now();
+  const heavy = now >= heavyAt;
+  if (heavy) heavyAt = now + 120;
+  updateReadout(st, heavy);
+}
+
+function loop(ts) {
+  if (!loop.last) loop.last = ts;
+  const real = Math.min(0.05, (ts - loop.last) / 1000);
+  loop.last = ts;
+  if (S.playing) advance(real * S.speed);
+  paint(derive(S.t));
+  requestAnimationFrame(loop);
+}
+
+function pointerWorld(ev) {
+  const canvas = $("stage");
+  const r = canvas.getBoundingClientRect();
+  const px = ev.clientX - r.left;
+  const py = ev.clientY - r.top;
+  if (!view) return null;
+  if (view.vertical) {
+    const x = view.lo + (view.bottom - py) / (view.bottom - view.top) * (view.hi - view.lo);
+    return { x, px, py, near: Math.abs(py - view.Y(S.gate)) < 16 };
+  }
+  const x = view.lo + (px - view.left) / (view.right - view.left) * (view.hi - view.lo);
+  return { x, px, py, near: Math.abs(px - view.X(S.gate)) < 16 };
+}
+
+function bind() {
+  $("presets").innerHTML = PRESETS.map((p, i) => "<button type='button' data-i='" + i + "'>" + p[0] + "</button>").join("");
+  $("presets").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    applyPreset(PRESETS[Number(b.dataset.i)][1]);
+  });
+  const resetters = ["x0", "u", "a", "m"];
+  resetters.forEach((id) => {
+    $(id).addEventListener("input", () => {
+      if (lockInput) return;
+      if (id === "a") S.a0 = parseFloat($("a").value);
+      else S[id === "x0" ? "x0" : id] = parseFloat($(id).value);
+      if (id === "m") S.m = parseFloat($("m").value);
+      writeOutputs();
+      resetSim();
+    });
+  });
+  $("gate").addEventListener("input", () => {
+    if (lockInput) return;
+    S.gate = parseFloat($("gate").value);
+    writeOutputs();
+  });
+  $("mode").addEventListener("change", () => {
+    S.mode = $("mode").value;
+    refreshEnable();
+    writeOutputs();
+    resetSim();
+  });
+  $("gSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    S.g = parseFloat(b.dataset.g);
+    syncInputs();
+    resetSim();
+  });
+  $("air").addEventListener("change", () => { S.air = $("air").checked; refreshEnable(); resetSim(); });
+  $("vectors").addEventListener("change", () => { S.vectors = $("vectors").checked; });
+  $("compare").addEventListener("change", () => { S.compare = $("compare").checked; resetSim(); });
+  $("ground").addEventListener("change", () => { S.groundStop = $("ground").checked; resetSim(); });
+  $("apexPause").addEventListener("change", () => { S.pauseApex = $("apexPause").checked; });
+  $("speed").addEventListener("change", () => { S.speed = parseFloat($("speed").value); });
+  $("tickRate").addEventListener("change", () => { S.tickDt = parseFloat($("tickRate").value); N = null; });
+  $("play").addEventListener("click", () => {
+    const st = derive(S.t);
+    if (finishedState(st) === "ground" || S.t >= MAX_T - 1e-4) return;
+    S.playing = true;
+    if (S.note === "apex") S.note = "";
+  });
+  $("pause").addEventListener("click", () => { S.playing = false; });
+  $("step").addEventListener("click", () => { S.playing = false; advance(FRAME); });
+  $("reset").addEventListener("click", resetSim);
+  window.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, select, textarea")) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (S.playing) S.playing = false;
+      else $("play").click();
+    } else if (e.code === "ArrowRight") {
+      e.preventDefault();
+      S.playing = false;
+      advance(FRAME);
+    } else if (e.key === "r" || e.key === "R") resetSim();
+  });
+  const canvas = $("stage");
+  canvas.addEventListener("pointerdown", (e) => {
+    const p = pointerWorld(e);
+    if (!p) return;
+    canvas.setPointerCapture(e.pointerId);
+    canvas._drag = p.near;
+    canvas._moved = false;
+    canvas._px = p.px;
+    canvas._py = p.py;
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!canvas.hasPointerCapture(e.pointerId)) return;
+    const p = pointerWorld(e);
+    if (!p) return;
+    if (Math.hypot(p.px - canvas._px, p.py - canvas._py) > 3) canvas._moved = true;
+    if (canvas._drag || canvas._moved) {
+      S.gate = Math.round(Math.max(-80, Math.min(120, p.x)) * 2) / 2;
+      $("gate").value = Math.max(-50, Math.min(50, S.gate));
+      writeOutputs();
+      if (view && !view.vertical) {
+        if (S.gate > S.camLo + SPAN - 3) S.camLo = S.gate - SPAN + 6;
+        if (S.gate < S.camLo + 3) S.camLo = S.gate - 6;
+      }
+    }
+  });
+  canvas.addEventListener("pointerup", (e) => {
+    const p = pointerWorld(e);
+    if (p && !canvas._moved && !canvas._drag) {
+      S.gate = Math.round(Math.max(-80, Math.min(120, p.x)) * 2) / 2;
+      $("gate").value = Math.max(-50, Math.min(50, S.gate));
+      writeOutputs();
+    }
+    canvas._drag = false;
+  });
+}
+
+function boot() {
+  bind();
+  syncInputs();
+  refreshEnable();
+  const stats = $("stats");
+  stats.innerHTML = "";
+  requestAnimationFrame(loop);
+}
+boot();
+</script>
+</body>
+</html>
